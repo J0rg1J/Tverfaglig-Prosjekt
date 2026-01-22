@@ -2,6 +2,6 @@
 const supabaseUrl = "https://lllydmhdgetqhihhezsq.supabase.co";
 const supabaseKey = "sb_publishable_GQQrAyPTReEIUAbehyJRBA_6ld7H8-0";
 
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-console.log("Supabase er koblet:", supabase);
+console.log("Supabase er koblet:", supabaseClient);
