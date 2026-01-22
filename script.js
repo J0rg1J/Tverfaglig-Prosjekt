@@ -5,3 +5,15 @@ const supabaseKey = "sb_publishable_GQQrAyPTReEIUAbehyJRBA_6ld7H8-0";
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 console.log("Supabase er koblet:", supabaseClient);
+
+async function hentMeldinger() {
+  const { data, error } = await supabaseClient.from("messages").select("*");
+
+  if (error) {
+    console.error("Feil ved henting:", error);
+  } else {
+    console.log("Meldinger fra databasen:", data);
+  }
+}
+
+hentMeldinger();
