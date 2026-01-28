@@ -6,14 +6,132 @@ const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 console.log("Supabase er koblet:", supabaseClient);
 
+const adminEmails = ["jorgenhellenesj@gmail.com", "placeholder@example.com"];
+
+function visMelding(tekst, type = "success") {
+  const feedback = document.getElementById("feedback");
+
+  feedback.innerHTML = `
+    <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+      ${tekst}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  `;
+}
+
+async function loggInnMedSkjema() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    console.error("Innlogging-feil:", error);
+    visMelding("Innlogging feilet. Sjekk e-post/passord.", "danger");
+    return;
+  }
+
+  visMelding("Du er logget inn.", "success");
+  oppdaterAdminVisning();
+
+  // Lukk modal
+  const modalEl = document.getElementById("authModal");
+  bootstrap.Modal.getInstance(modalEl)?.hide();
+}
+
+async function lagBrukerMedSkjema() {
+  const email = document.getElementById("signupEmail").value.trim();
+  const password = document.getElementById("signupPassword").value;
+
+  const { error } = await supabaseClient.auth.signUp({ email, password });
+
+  if (error) {
+    console.error("Sign up-feil:", error);
+    visMelding("Kunne ikke lage bruker.", "danger");
+    return;
+  }
+
+  visMelding(
+    "Bruker opprettet. Sjekk e-post for verifisering (hvis aktivert).",
+    "success",
+  );
+}
+
+async function loggInn() {
+  const email = prompt("E-post:")?.trim();
+  const password = prompt("Passord:");
+
+  if (!email || !password) return;
+
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    console.error("Innlogging-feil:", error);
+    visMelding("Innlogging feilet.", "danger");
+    return;
+  }
+
+  visMelding("Du er logget inn.", "success");
+  oppdaterAdminVisning();
+}
+
+async function oppdaterAdminVisning() {
+  const adminSection = document.getElementById("adminSection");
+
+  const { data } = await supabaseClient.auth.getUser();
+  const user = data?.user;
+
+  if (!user) {
+    adminSection.classList.add("d-none");
+    return;
+  }
+
+  if (adminEmails.includes(user.email)) {
+    adminSection.classList.remove("d-none");
+    hentAktiveUtlån();
+  } else {
+    adminSection.classList.add("d-none");
+  }
+}
+
 function formatDateISO(d) {
   // yyyy-mm-dd
   return d.toISOString().slice(0, 10);
 }
 
 async function bookUtstyr(equipmentId) {
-  const phone = prompt("Skriv inn telefonnummer:");
+  const phone = prompt("Skriv inn telefonnummer:")?.trim();
   if (!phone) return;
+
+  // Sjekk om bruker er sperret pga for sen levering
+  const today = formatDateISO(new Date());
+
+  const { data: lateBookings, error: lateError } = await supabaseClient
+    .from("bookings")
+    .select("id")
+    .eq("user_phone", phone)
+    .eq("returned", false)
+    .lt("end_date", today);
+
+  if (lateError) {
+    console.error("Feil ved sperre-sjekk:", lateError);
+    alert("Kunne ikke sjekke sperrestatus. Sjekk Console.");
+    return;
+  }
+
+  if ((lateBookings?.length ?? 0) > 0) {
+    visMelding(
+      "Du kan ikke booke nytt utstyr før for sent levert utstyr er levert inn.",
+      "warning",
+    );
+    return;
+  }
 
   const start = new Date();
   const end = new Date();
@@ -32,7 +150,7 @@ async function bookUtstyr(equipmentId) {
 
   if (bookingError) {
     console.error("Booking-feil:", bookingError);
-    alert("Kunne ikke booke. Sjekk Console.");
+    visMelding("Kunne ikke booke utstyr.", "danger");
     return;
   }
 
@@ -48,7 +166,7 @@ async function bookUtstyr(equipmentId) {
     return;
   }
 
-  alert("Booket i 1 uke!");
+  visMelding("Utstyr er booket i 1 uke.", "success");
   hentUtstyr();
 }
 
@@ -96,5 +214,71 @@ async function hentUtstyr() {
   });
 }
 
-// Start
+async function hentAktiveUtlån() {
+  const { data, error } = await supabaseClient
+    .from("bookings")
+    .select("id, user_phone, start_date, end_date, equipment_id")
+    .eq("returned", false)
+    .order("end_date", { ascending: true });
+
+  if (error) {
+    console.error("Feil ved henting av utlån:", error);
+    return;
+  }
+
+  const container = document.getElementById("activeBookings");
+  container.innerHTML = "";
+
+  data.forEach((b) => {
+    const div = document.createElement("div");
+    div.className = "list-group-item";
+
+    div.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <strong>Tlf:</strong> ${b.user_phone}<br>
+          <small>${b.start_date} → ${b.end_date}</small><br>
+          <small><strong>Utstyr-ID:</strong> ${b.equipment_id}</small>
+        </div>
+        <button class="btn btn-sm btn-success" onclick="markerLevert('${b.id}', '${b.equipment_id}')">
+          Markér levert
+        </button>
+      </div>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+async function markerLevert(bookingId, equipmentId) {
+  // 1) sett booking returned = true
+  const { error: bErr } = await supabaseClient
+    .from("bookings")
+    .update({ returned: true })
+    .eq("id", bookingId);
+
+  if (bErr) {
+    console.error("Feil ved retur:", bErr);
+    alert("Kunne ikke markere som levert.");
+    return;
+  }
+
+  // 2) sett utstyr available = true
+  const { error: eErr } = await supabaseClient
+    .from("equipment")
+    .update({ available: true })
+    .eq("id", equipmentId);
+
+  if (eErr) {
+    console.error("Feil ved oppdatering av utstyr:", eErr);
+    alert("Levert, men kunne ikke gjøre utstyr tilgjengelig.");
+    return;
+  }
+
+  visMelding("Utstyr er markert som levert.", "success");
+  hentUtstyr();
+  hentAktiveUtlån();
+}
+
 hentUtstyr();
+hentAktiveUtlån();
