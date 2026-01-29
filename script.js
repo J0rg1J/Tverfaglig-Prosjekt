@@ -8,6 +8,8 @@ console.log("Supabase er koblet:", supabaseClient);
 
 const adminEmails = ["jorgenhellenesj@gmail.com", "placeholder@example.com"];
 
+let utstyrCache = [];
+
 function visMelding(tekst, type = "success") {
   const feedback = document.getElementById("feedback");
 
@@ -181,12 +183,53 @@ async function hentUtstyr() {
     return;
   }
 
-  console.log("Utstyr:", data);
+  utstyrCache = data;
+  fyllKategorier();
+  renderUtstyr();
+}
 
+function fyllKategorier() {
+  const select = document.getElementById("filterCategory");
+  if (!select) return;
+
+  const kategorier = [...new Set(utstyrCache.map((x) => x.category))].sort();
+
+  // Behold "Alle"
+  select.innerHTML =
+    `<option value="">Alle</option>` +
+    kategorier.map((k) => `<option value="${k}">${k}</option>`).join("");
+}
+
+function renderUtstyr() {
   const list = document.getElementById("messages");
   list.innerHTML = "";
 
-  data.forEach((item) => {
+  const category = document.getElementById("filterCategory")?.value ?? "";
+  const availability =
+    document.getElementById("filterAvailability")?.value ?? "all";
+  const search = (
+    document.getElementById("filterSearch")?.value ?? ""
+  ).toLowerCase();
+
+  let filtered = utstyrCache;
+
+  if (category) {
+    filtered = filtered.filter((x) => x.category === category);
+  }
+
+  if (availability === "available") {
+    filtered = filtered.filter((x) => x.available === true);
+  } else if (availability === "unavailable") {
+    filtered = filtered.filter((x) => x.available === false);
+  }
+
+  if (search) {
+    filtered = filtered.filter((x) =>
+      (x.name ?? "").toLowerCase().includes(search),
+    );
+  }
+
+  filtered.forEach((item) => {
     const div = document.createElement("div");
     div.className = "list-group-item";
 
@@ -280,5 +323,18 @@ async function markerLevert(bookingId, equipmentId) {
   hentAktiveUtlån();
 }
 
+function hookFilterEvents() {
+  document
+    .getElementById("filterCategory")
+    ?.addEventListener("change", renderUtstyr);
+  document
+    .getElementById("filterAvailability")
+    ?.addEventListener("change", renderUtstyr);
+  document
+    .getElementById("filterSearch")
+    ?.addEventListener("input", renderUtstyr);
+}
+
+hookFilterEvents();
 hentUtstyr();
-hentAktiveUtlån();
+oppdaterAdminVisning();

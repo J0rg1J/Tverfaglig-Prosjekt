@@ -65,6 +65,37 @@
       </p>
 
       <h2 class="mt-4">Tilgjengelig vinterutstyr</h2>
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="row g-2">
+            <div class="col-12 col-md-4">
+              <label class="form-label">Kategori</label>
+              <select id="filterCategory" class="form-select">
+                <option value="">Alle</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Tilgjengelighet</label>
+              <select id="filterAvailability" class="form-select">
+                <option value="all">Alle</option>
+                <option value="available">Kun tilgjengelig</option>
+                <option value="unavailable">Kun utlånt</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Søk</label>
+              <input
+                id="filterSearch"
+                class="form-control"
+                placeholder="Søk i navn..."
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="messages" class="list-group"></div>
     </main>
 
