@@ -12,7 +12,6 @@ let utstyrCache = [];
 
 function visMelding(tekst, type = "success") {
   const feedback = document.getElementById("feedback");
-
   feedback.innerHTML = `
     <div class="alert alert-${type} alert-dismissible fade show" role="alert">
       ${tekst}
@@ -38,6 +37,7 @@ async function loggInnMedSkjema() {
 
   visMelding("Du er logget inn.", "success");
   oppdaterAdminVisning();
+  hentMineUtlån();
 
   // Lukk modal
   const modalEl = document.getElementById("authModal");
@@ -62,27 +62,6 @@ async function lagBrukerMedSkjema() {
   );
 }
 
-async function loggInn() {
-  const email = prompt("E-post:")?.trim();
-  const password = prompt("Passord:");
-
-  if (!email || !password) return;
-
-  const { error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    console.error("Innlogging-feil:", error);
-    visMelding("Innlogging feilet.", "danger");
-    return;
-  }
-
-  visMelding("Du er logget inn.", "success");
-  oppdaterAdminVisning();
-}
-
 async function oppdaterAdminVisning() {
   const adminSection = document.getElementById("adminSection");
 
@@ -103,27 +82,32 @@ async function oppdaterAdminVisning() {
 }
 
 function formatDateISO(d) {
-  // yyyy-mm-dd
   return d.toISOString().slice(0, 10);
 }
 
 async function bookUtstyr(equipmentId) {
-  const phone = prompt("Skriv inn telefonnummer:")?.trim();
-  if (!phone) return;
+  const { data: authData } = await supabaseClient.auth.getUser();
+  const user = authData?.user;
 
-  // Sjekk om bruker er sperret pga for sen levering
+  if (!user) {
+    visMelding("Du må logge inn for å booke utstyr.", "warning");
+    return;
+  }
+
+  const phone = prompt("Skriv inn telefonnummer (valgfritt):")?.trim() || null;
+
   const today = formatDateISO(new Date());
 
   const { data: lateBookings, error: lateError } = await supabaseClient
     .from("bookings")
     .select("id")
-    .eq("user_phone", phone)
+    .eq("user_email", user.email)
     .eq("returned", false)
     .lt("end_date", today);
 
   if (lateError) {
     console.error("Feil ved sperre-sjekk:", lateError);
-    alert("Kunne ikke sjekke sperrestatus. Sjekk Console.");
+    visMelding("Kunne ikke sjekke sperrestatus.", "danger");
     return;
   }
 
@@ -139,10 +123,10 @@ async function bookUtstyr(equipmentId) {
   const end = new Date();
   end.setDate(start.getDate() + 7);
 
-  // 1) Lag booking
   const { error: bookingError } = await supabaseClient.from("bookings").insert([
     {
       equipment_id: equipmentId,
+      user_email: user.email,
       user_phone: phone,
       start_date: formatDateISO(start),
       end_date: formatDateISO(end),
@@ -156,7 +140,6 @@ async function bookUtstyr(equipmentId) {
     return;
   }
 
-  // 2) Sett utstyr til utlånt
   const { error: updateError } = await supabaseClient
     .from("equipment")
     .update({ available: false })
@@ -164,12 +147,13 @@ async function bookUtstyr(equipmentId) {
 
   if (updateError) {
     console.error("Oppdateringsfeil:", updateError);
-    alert("Booking lagret, men status ble ikke oppdatert.");
+    visMelding("Booking lagret, men status ble ikke oppdatert.", "warning");
     return;
   }
 
   visMelding("Utstyr er booket i 1 uke.", "success");
   hentUtstyr();
+  hentMineUtlån();
 }
 
 async function hentUtstyr() {
@@ -194,7 +178,6 @@ function fyllKategorier() {
 
   const kategorier = [...new Set(utstyrCache.map((x) => x.category))].sort();
 
-  // Behold "Alle"
   select.innerHTML =
     `<option value="">Alle</option>` +
     kategorier.map((k) => `<option value="${k}">${k}</option>`).join("");
@@ -213,9 +196,7 @@ function renderUtstyr() {
 
   let filtered = utstyrCache;
 
-  if (category) {
-    filtered = filtered.filter((x) => x.category === category);
-  }
+  if (category) filtered = filtered.filter((x) => x.category === category);
 
   if (availability === "available") {
     filtered = filtered.filter((x) => x.available === true);
@@ -260,7 +241,7 @@ function renderUtstyr() {
 async function hentAktiveUtlån() {
   const { data, error } = await supabaseClient
     .from("bookings")
-    .select("id, user_phone, start_date, end_date, equipment_id")
+    .select("id, user_email, user_phone, start_date, end_date, equipment_id")
     .eq("returned", false)
     .order("end_date", { ascending: true });
 
@@ -279,7 +260,8 @@ async function hentAktiveUtlån() {
     div.innerHTML = `
       <div class="d-flex justify-content-between align-items-center">
         <div>
-          <strong>Tlf:</strong> ${b.user_phone}<br>
+          <strong>E-post:</strong> ${b.user_email}<br>
+          <small>Tlf:</small> ${b.user_phone ?? "-"}<br>
           <small>${b.start_date} → ${b.end_date}</small><br>
           <small><strong>Utstyr-ID:</strong> ${b.equipment_id}</small>
         </div>
@@ -294,7 +276,6 @@ async function hentAktiveUtlån() {
 }
 
 async function markerLevert(bookingId, equipmentId) {
-  // 1) sett booking returned = true
   const { error: bErr } = await supabaseClient
     .from("bookings")
     .update({ returned: true })
@@ -302,11 +283,10 @@ async function markerLevert(bookingId, equipmentId) {
 
   if (bErr) {
     console.error("Feil ved retur:", bErr);
-    alert("Kunne ikke markere som levert.");
+    visMelding("Kunne ikke markere som levert.", "danger");
     return;
   }
 
-  // 2) sett utstyr available = true
   const { error: eErr } = await supabaseClient
     .from("equipment")
     .update({ available: true })
@@ -314,7 +294,7 @@ async function markerLevert(bookingId, equipmentId) {
 
   if (eErr) {
     console.error("Feil ved oppdatering av utstyr:", eErr);
-    alert("Levert, men kunne ikke gjøre utstyr tilgjengelig.");
+    visMelding("Levert, men kunne ikke gjøre utstyr tilgjengelig.", "danger");
     return;
   }
 
@@ -335,6 +315,58 @@ function hookFilterEvents() {
     ?.addEventListener("input", renderUtstyr);
 }
 
+async function hentMineUtlån() {
+  const { data: authData } = await supabaseClient.auth.getUser();
+  const user = authData?.user;
+
+  const container = document.getElementById("myLoans");
+  if (!container) return;
+
+  if (!user) {
+    container.innerHTML = `<div class="list-group-item">Logg inn for å se dine utlån.</div>`;
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("bookings")
+    .select("id, start_date, end_date, returned, equipment_id")
+    .eq("user_email", user.email)
+    .order("end_date", { ascending: true });
+
+  if (error) {
+    console.error("Feil ved henting av mine utlån:", error);
+    container.innerHTML = `<div class="list-group-item">Kunne ikke hente utlån.</div>`;
+    return;
+  }
+
+  container.innerHTML = "";
+
+  if (data.length === 0) {
+    container.innerHTML = `<div class="list-group-item">Du har ingen utlån.</div>`;
+    return;
+  }
+
+  data.forEach((b) => {
+    const div = document.createElement("div");
+    div.className = "list-group-item";
+
+    const utstyr = utstyrCache.find((x) => x.id === b.equipment_id);
+    const navn = utstyr?.name ?? b.equipment_id;
+
+    div.innerHTML = `
+      <div>
+        <strong>${navn}</strong><br>
+        <small>${b.start_date} → ${b.end_date}</small><br>
+        <small>Status: ${b.returned ? "Levert" : "Aktiv"}</small>
+      </div>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+// Start
 hookFilterEvents();
 hentUtstyr();
+hentMineUtlån();
 oppdaterAdminVisning();
