@@ -212,27 +212,32 @@ function renderUtstyr() {
 
   filtered.forEach((item) => {
     const div = document.createElement("div");
-    div.className = "list-group-item";
+    div.className = "col-12 col-md-6 col-lg-4";
 
     const statusTekst = item.available ? "Tilgjengelig" : "Utlånt";
-    const statusFarge = item.available ? "success" : "danger";
+    const statusFarge = item.available ? "success" : "secondary";
 
     const bookKnapp = item.available
-      ? `<button class="btn btn-sm btn-primary mt-2" onclick="bookUtstyr('${item.id}')">Book</button>`
+      ? `<button class="btn btn-sm btn-primary mt-3" onclick="bookUtstyr('${item.id}')">Book</button>`
       : "";
 
     div.innerHTML = `
-      <div>
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <strong>${item.name}</strong><br>
-            <small>${item.category}</small>
-          </div>
-          <span class="badge bg-${statusFarge}">${statusTekst}</span>
+    <div class="card h-100">
+      <div class="card-body d-flex flex-column justify-content-between">
+        <div>
+          <h6 class="card-title mb-1">${item.name}</h6>
+          <small class="text-muted">${item.category}</small>
         </div>
-        ${bookKnapp}
+
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <span class="badge bg-${statusFarge}">
+            ${statusTekst}
+          </span>
+          ${bookKnapp}
+        </div>
       </div>
-    `;
+    </div>
+  `;
 
     list.appendChild(div);
   });
@@ -255,7 +260,7 @@ async function hentAktiveUtlån() {
 
   data.forEach((b) => {
     const div = document.createElement("div");
-    div.className = "list-group-item";
+    div.className = "col-12 col-md-6 col-lg-4";
 
     div.innerHTML = `
       <div class="d-flex justify-content-between align-items-center">
@@ -348,7 +353,7 @@ async function hentMineUtlån() {
 
   data.forEach((b) => {
     const div = document.createElement("div");
-    div.className = "list-group-item";
+    div.className = "col-12 col-md-6 col-lg-4";
 
     const utstyr = utstyrCache.find((x) => x.id === b.equipment_id);
     const navn = utstyr?.name ?? b.equipment_id;

@@ -57,3 +57,37 @@ footer {
   font-size: 0.9rem;
   opacity: 0.85;
 }
+
+/* Produktkort */
+.card {
+  border: 1px solid #e5e7eb; /* lys, nøytral grå */
+  border-radius: 0.75rem;
+  background-color: #ffffff;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+/* Litt liv når man holder musen over */
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+/* Litt luft inni kortet */
+.card-body {
+  padding: 1rem 1.1rem;
+}
+
+/* Tittel litt tydeligere */
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+@media (min-width: 992px) {
+  .card {
+    min-height: 140px;
+  }
+}
