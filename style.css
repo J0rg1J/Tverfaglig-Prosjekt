@@ -1,3 +1,59 @@
+/* Generelt */
 body {
-  background-color: #f8f9fa;
+  background-color: #f8f9fa; /* Bootstrap light grey */
+}
+
+/* Overskrifter */
+h1,
+h2,
+h3 {
+  font-weight: 600;
+}
+
+/* Kort / filter */
+.card {
+  border-radius: 0.5rem;
+}
+
+/* List items (utstyr, utlån) */
+.list-group-item {
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Badge-justering */
+.badge {
+  font-size: 0.85rem;
+  padding: 0.45em 0.65em;
+}
+
+/* Admin-seksjon */
+#adminSection {
+  border-top: 2px solid #dee2e6;
+  padding-top: 1rem;
+}
+
+/* Mine utlån */
+#myLoans .list-group-item {
+  background-color: #ffffff;
+}
+
+/* Feedback / alerts */
+#feedback {
+  max-width: 720px;
+}
+
+/* Modal */
+.modal-content {
+  border-radius: 0.75rem;
+}
+
+button {
+  border-radius: 0.4rem;
+}
+
+/* Footer */
+footer {
+  font-size: 0.9rem;
+  opacity: 0.85;
 }
