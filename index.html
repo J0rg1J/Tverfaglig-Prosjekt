@@ -4,15 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>vinterutstyr-låning</title>
+
+    <!-- Bootstrap:
+         Jeg brukte et profesjonelt og responsivt oppsett med Bootstrap,
+         slik at nettsiden fungerer godt på mobil (målgruppen bruker ofte telefon). -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+
+    <!-- Egen CSS:
+         AI ble brukt til å foreslå små, nøytrale forbedringer (spacing, rammer på kort),
+         uten sterke farger eller "design-støy". -->
     <link rel="stylesheet" href="style.css" />
   </head>
 
   <body>
-    <!-- NAVBAR -->
+    <!-- NAVBAR
+         Her har jeg satt opp en standard Bootstrap-navbar med collapse-meny,
+         så navigasjonen fungerer bra på mobil (hamburger-meny). -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
         <a class="navbar-brand" href="#">vinterutstyr-låning</a>
@@ -31,6 +41,11 @@
             <li class="nav-item">
               <a class="nav-link active" href="#">Hjem</a>
             </li>
+
+            <!-- Logg inn:
+                 AI hjalp meg å løse "ingenting skjer når jeg trykker Logg inn"
+                 ved å bruke Bootstrap modal (data-bs-toggle / data-bs-target).
+                 Selve innloggingen håndteres i script.js via Supabase Auth. -->
             <li class="nav-item">
               <a
                 class="nav-link"
@@ -40,6 +55,10 @@
                 >Logg inn</a
               >
             </li>
+
+            <!-- Brukerveiledning:
+                 Jeg gjorde dette til en anker-lenke (#veiledning),
+                 slik at menyen tar deg til riktig seksjon. -->
             <li class="nav-item">
               <a class="nav-link" href="#veiledning">Brukerveiledning</a>
             </li>
@@ -48,6 +67,9 @@
       </div>
     </nav>
 
+    <!-- Feedback/tilbakemeldinger:
+         AI foreslo å vise meldinger som Bootstrap alerts i stedet for alert()-popups,
+         fordi popups oppleves masete (må trykke OK hele tiden). -->
     <div class="container mt-3">
       <div id="feedback"></div>
     </div>
@@ -55,6 +77,11 @@
     <!-- HOVEDINNHOLD -->
     <main class="container mt-5">
       <h2 class="mt-4">Tilgjengelig vinterutstyr</h2>
+
+      <!-- Filterpanel:
+           AI hjalp meg å lage et filteroppsett som ligner netthandel-filtrering
+           (kategori, tilgjengelighet og søk). Filtreringen skjer i script.js
+           ved å hente data fra Supabase og filtrere basert på disse input-feltene. -->
       <div class="card mb-3">
         <div class="card-body">
           <div class="row g-2">
@@ -86,30 +113,44 @@
         </div>
       </div>
 
+      <!-- Utstyr-liste (grid):
+           AI hjalp meg å forbedre UI fra en lang liste" til et grid-oppsett (Bootstrap row).
+           Elementene blir lagt inn her dynamisk fra script.js (renderUtstyr()).
+           Dette gir bedre oversikt enn at alt står under hverandre. -->
       <div id="messages" class="row g-3"></div>
+
       <hr class="my-4" />
+
       <h2>Mine utlån</h2>
       <div id="myLoans" class="list-group"></div>
 
       <hr class="my-4" />
+
+      <!-- Brukerveiledning:
+           AI hjalp meg å redigere veiledning teksten jeg skrev i trinn som passer målgruppen.
+           Dette er en del av kompetansemålet innen brukerstøtte. -->
       <h2 id="veiledning">Brukerveiledning</h2>
+
       <p>1. Hva er denne tjenesten?</p>
       <p>
-        Denne nettsiden lar deg låne vinterutstyr gratis i én uke. Tjenesten er
+        Denne nettsiden lar deg låne vinterutstyr gratis i en uke. Tjenesten er
         laget for familier og privatpersoner som ønsker å prøve
         vinteraktiviteter uten å kjøpe eget utstyr.
       </p>
+
       <p>2. Lage bruker</p>
       <p>
         Trykk på «Logg inn» øverst på siden Velg fanen «Lag bruker» Skriv inn
         e-post og passord Trykk «Lag bruker» Sjekk e-posten din og bekreft
         kontoen via lenken du mottar
       </p>
+
       <p>3. Logge inn</p>
       <p>
         Trykk på «Logg inn» Skriv inn e-post og passord Trykk «Logg inn» Når du
         er logget inn kan du booke utstyr og se dine egne utlån.
       </p>
+
       <p>4. Finne utstyr</p>
       <p>
         På forsiden ser du en liste med tilgjengelig vinterutstyr. Du kan:
@@ -117,12 +158,14 @@
         tilgjengelig utstyr søke på navn i søkefeltet Dette gjør det enklere å
         finne riktig utstyr.
       </p>
+
       <p>5. Booke utstyr</p>
       <p>
         Logg inn Finn ønsket utstyr Trykk på «Book» legg inn telefonnummer
         Utstyret bookes automatisk i én uke Hvis du har for sent levert utstyr
         fra før, vil du ikke kunne booke nytt før dette er levert inn.
       </p>
+
       <p>6. Se dine utlån</p>
       <p>
         Under overskriften «Mine utlån» kan du: se hvilket utstyr du har lånt se
@@ -132,6 +175,10 @@
 
     <hr class="my-4" />
 
+    <!-- Admin-seksjon (skjult som standard):
+         AI hjalp meg å gjøre admin-delen skjult til burkere som ikke er adminer (d-none).
+         I script.js sjekkes innlogget bruker mot en liste med admin-e-poster,
+         og admin-delen vises bare for admin. -->
     <div id="adminSection" class="d-none container mt-4">
       <h2>Admin: aktive utlån</h2>
       <div id="activeBookings" class="list-group"></div>
@@ -142,6 +189,9 @@
       <p class="mb-0">© 2026 Jørgen's vinterutstyr.</p>
     </footer>
 
+    <!-- Auth modal:
+         AI ble brukt til å foreslå en ryddig innloggings-/registreringsløsning med modal + tabs,
+         slik at brukeren kan logge inn eller lage konto uten å forlate siden. -->
     <div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -182,7 +232,9 @@
             </ul>
 
             <div class="tab-content pt-3">
-              <!-- Logg inn -->
+              <!-- Logg inn:
+                   onclick kaller en funksjon i script.js (loggInnMedSkjema()).
+                   AI bidro til å koble UI-knappen til Supabase auth-funksjonene. -->
               <div
                 class="tab-pane fade show active"
                 id="loginTab"
@@ -208,7 +260,9 @@
                 </button>
               </div>
 
-              <!-- Lag bruker -->
+              <!-- Lag bruker:
+                   onclick kaller lagBrukerMedSkjema() i script.js, som bruker Supabase signUp.
+                   AI ble brukt til å foreslå struktur og feilmeldinger. -->
               <div class="tab-pane fade" id="signupTab" role="tabpanel">
                 <div class="mb-3">
                   <label class="form-label">E-post</label>
@@ -242,13 +296,17 @@
       </div>
     </div>
 
-    <!-- Bootstrap JS -->
+    <!-- Bootstrap JS:
+         nødvendig for navbar collapse og modal-funksjonalitet. -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Supabase JS -->
+    <!-- Supabase JS:
+         biblioteket som brukes i script.js for database og autentisering. -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-    <!-- EGEN JavaScript-fil -->
+    <!-- EGEN JavaScript-fil:
+         hovedlogikken ligger i script.js (henting/visning av utstyr, booking, innlogging,
+         admin-visning og "mine utlån"). -->
     <script src="script.js"></script>
   </body>
 </html>

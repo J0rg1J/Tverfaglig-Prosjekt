@@ -94,7 +94,7 @@ async function bookUtstyr(equipmentId) {
     return;
   }
 
-  const phone = prompt("Skriv inn telefonnummer (valgfritt):")?.trim() || null;
+  const phone = prompt("Skriv inn telefonnummer:")?.trim() || null;
 
   const today = formatDateISO(new Date());
 
