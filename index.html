@@ -3,15 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tverfaglig Prosjekt</title>
-
-    <!-- Bootstrap CSS -->
+    <title>vinterutstyr-låning</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
-
-    <!-- Egen CSS -->
     <link rel="stylesheet" href="style.css" />
   </head>
 
@@ -19,7 +15,7 @@
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
-        <a class="navbar-brand" href="#">Tverfaglig Prosjekt</a>
+        <a class="navbar-brand" href="#">vinterutstyr-låning</a>
 
         <button
           class="navbar-toggler"
@@ -58,12 +54,6 @@
 
     <!-- HOVEDINNHOLD -->
     <main class="container mt-5">
-      <h1>Velkommen</h1>
-      <p>
-        Dette er et skoleprosjekt der jeg bruker HTML, CSS, JavaScript,
-        Bootstrap og Supabase.
-      </p>
-
       <h2 class="mt-4">Tilgjengelig vinterutstyr</h2>
       <div class="card mb-3">
         <div class="card-body">
@@ -103,7 +93,41 @@
 
       <hr class="my-4" />
       <h2 id="veiledning">Brukerveiledning</h2>
-      <p>...</p>
+      <p>1. Hva er denne tjenesten?</p>
+      <p>
+        Denne nettsiden lar deg låne vinterutstyr gratis i én uke. Tjenesten er
+        laget for familier og privatpersoner som ønsker å prøve
+        vinteraktiviteter uten å kjøpe eget utstyr.
+      </p>
+      <p>2. Lage bruker</p>
+      <p>
+        Trykk på «Logg inn» øverst på siden Velg fanen «Lag bruker» Skriv inn
+        e-post og passord Trykk «Lag bruker» Sjekk e-posten din og bekreft
+        kontoen via lenken du mottar
+      </p>
+      <p>3. Logge inn</p>
+      <p>
+        Trykk på «Logg inn» Skriv inn e-post og passord Trykk «Logg inn» Når du
+        er logget inn kan du booke utstyr og se dine egne utlån.
+      </p>
+      <p>4. Finne utstyr</p>
+      <p>
+        På forsiden ser du en liste med tilgjengelig vinterutstyr. Du kan:
+        filtrere på kategori (for eksempel ski eller klær) velge kun
+        tilgjengelig utstyr søke på navn i søkefeltet Dette gjør det enklere å
+        finne riktig utstyr.
+      </p>
+      <p>5. Booke utstyr</p>
+      <p>
+        Logg inn Finn ønsket utstyr Trykk på «Book» legg inn telefonnummer
+        Utstyret bookes automatisk i én uke Hvis du har for sent levert utstyr
+        fra før, vil du ikke kunne booke nytt før dette er levert inn.
+      </p>
+      <p>6. Se dine utlån</p>
+      <p>
+        Under overskriften «Mine utlån» kan du: se hvilket utstyr du har lånt se
+        fra og til hvilken dato se om utlånet er aktivt eller levert
+      </p>
     </main>
 
     <hr class="my-4" />
@@ -115,7 +139,7 @@
 
     <!-- FOOTER -->
     <footer class="bg-dark text-light text-center p-3 mt-5">
-      <p class="mb-0">© 2026 Tverfaglig Prosjekt</p>
+      <p class="mb-0">© 2026 Jørgen's vinterutstyr.</p>
     </footer>
 
     <div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
@@ -197,7 +221,7 @@
                     type="password"
                     class="form-control"
                   />
-                  <div class="form-text">Minst 6 tegn er vanlig.</div>
+                  <div class="form-text">Minst 6 tegn.</div>
                 </div>
                 <button
                   class="btn btn-success w-100"
